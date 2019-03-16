@@ -61,14 +61,43 @@ def match():
         cur.execute(q2)
         res2=cur.fetchall()
         a=[]
+        demoa=[]
+        partial=[]
+        unmatched=[]
+        k=[]
         for i in res1:
+            found=False
+            c=0
             for j in res2:
-                if i[':32B']==j[':33B'] and i[':33B']==j[':32B'] and i[':82A']==j[':87A'] and i[':87A']==j[':82A'] and i[':77H']==j[':77H'] and i[':30T']==j[':30T'] and i[':30V']==j[':30V'] and i[':36']==j[':36'] and i[':56']==j[':56']: #and i[':57A']==j[':57A'] and i[':58']==j[':58']:
-                    a.append((i[':20'],j[':20']))
-        print(len(a))
-        return jsonify(a)
+                c=c+1
+                if i[':30V']==j[':30V'] and i[':36']==j[':36'] and i[':32B']==j[':33B'] and i[':33B']==j[':32B']:
+                    if i[':82A']==j[':87A'] and i[':87A']==j[':82A'] and i[':77H']==j[':77H'] and i[':30T']==j[':30T'] and i[':56']==j[':56']: #and i[':57A']==j[':57A'] and i[':58']==j[':58']:
+                        a.append([i[':20'],j[':20']])
+                        demoa.append(i)
+                        break
+                    else:
+                        partial.append(i)
+                else:
+                    if c==len(res1):
+                        unmatched.append(i)
+
+        b=[row[':20'] for row in res1]
+        x=[row[0] for row in a]
+        
+        closefit=[i for i in partial if i not in unmatched]
+        closefit=list(set([row[':20'] for row in closefit]))
+        return jsonify({
+            'match':a,
+            'closefit':closefit,
+            'unmatch':unmatched
+        })
+
+        # return jsonify(a)
     except Exception as e:
         print(str(e))
+        a,b,c=sys.exc_info()
+        print(c.tb_lineno)
+        return make_response(str(e),500)
 
 if __name__=='__main__':
     app.run(debug=True)

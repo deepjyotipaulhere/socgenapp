@@ -27,57 +27,16 @@
         <div>
             <div class="container">
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <div class="card border-white shadow">
                             <div class="card-body">
                                 <h4 class="card-title">SG Files</h4>
-                                <div class="table-responsive">
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th>Column 1</th>
-                                                <th>Column 2</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>Cell 1</td>
-                                                <td>Cell 2</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Cell 3</td>
-                                                <td>Cell 4</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card bg-white shadow">
-                            <div class="card-body">
-                                <h4 class="card-title">CP Files</h4>
-                                <div class="table-responsive">
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th>Column 1</th>
-                                                <th>Column 2</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>Cell 1</td>
-                                                <td>Cell 2</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Cell 3</td>
-                                                <td>Cell 4</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                <GChart
+                                    type="PieChart"
+                                    :data="chartData"
+                                    :createChart="(el, google) => new google.charts.Pie(el)"
+                                    @ready="onChartReady"
+                                />
                             </div>
                         </div>
                     </div>
@@ -88,8 +47,7 @@
         <div>
             <div class="container">
                 <div class="row">
-                    <div class="col-md-2"></div>
-                    <div class="col-md-8">
+                    <div class="col-md-4">
                         <div class="card shadow" v-if="matches.length>0">
                             <div class="card-body">
                                 <h4 class="card-title">Match Results</h4>
@@ -112,12 +70,58 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-2"></div>
+                    <div class="col-md-4">
+                        <div class="card shadow" v-if="matches.length>0">
+                            <div class="card-body">
+                                <h4 class="card-title">Mismatch Results</h4>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>SG Reference</th>
+                                                <!-- <th>CP Reference</th> -->
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(x,i) in unmatches" :key="i">
+                                                <td>{{x[':20']}}</td>
+                                                <!-- <td>{{x[1]}}</td> -->
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card shadow" v-if="matches.length>0">
+                            <div class="card-body">
+                                <h4 class="card-title">Close Fits</h4>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>SG Reference</th>
+                                                <!-- <th>CP Reference</th> -->
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(x,i) in closefits" :key="i">
+                                                <td>{{x}}</td>
+                                                <!-- <td>{{x[1]}}</td> -->
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+        <br><br>
         <div>
-            <nav class="navbar navbar-light navbar-expand-md fixed-bottom text-center navigation-clean">
+            <nav class="navbar navbar-light navbar-expand-md fixed-bottom text-center navigation-clean shadow">
                 <div class="container"><button class="navbar-toggler" data-toggle="collapse" data-target="#navcol-1"><span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
                     <div class="collapse navbar-collapse" id="navcol-1"><button class="btn btn-primary" type="button" @click.prevent="match">Match</button>
                         <ul class="nav navbar-nav ml-auto"></ul>
@@ -129,6 +133,7 @@
 </template>
 
 <script>
+import {GChart} from 'vue-google-charts';
 export default {
     data(){
         return {
@@ -138,8 +143,15 @@ export default {
             cpfilesuploading:false,
             getsgfiles:[],
             getcpfiles:[],
-            matches:[]
+            matches:[],
+            unmatches:[],
+            closefits:[],
+            chartData:[],
         }
+    },
+
+    components:{
+        GChart
     },
 
     methods:{
@@ -191,8 +203,26 @@ export default {
             //     this.getcpfiles=response.data
             // })
             this.$axios.get("/match").then(response=>{
-                this.matches=response.data
+                this.matches=response.data.match
+                this.unmatches=response.data.unmatch
+                this.closefits=response.data.closefit
+                this.chartData=[
+                    ['Status','Count'],
+                    ['Match',this.matches.length],
+                    ['Mismatch',this.unmatches.length],
+                    ['Close Fits',this.closefits.length],
+                ]
+            }).then(()=>{
+                this.drawChart()
             })
+        },
+        drawChart(){
+            // this.$axios.get("http://localhost:5000").then(response=>{
+            //     this.chartData=response.data
+            // })
+        },
+        onChartReady (chart, google) {
+            this.chartsLib = google
         }
     }
 }
