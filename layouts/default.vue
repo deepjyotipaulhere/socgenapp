@@ -5,8 +5,8 @@
                 <div class="collapse navbar-collapse"
                     id="navcol-1">
                     <ul class="nav navbar-nav ml-auto">
-                        <li class="nav-item" role="presentation"><a class="nav-link" href="#">One-to-One</a></li>
-                        <li class="nav-item" role="presentation"><a class="nav-link" href="#">Many-to-One</a></li>
+                        <li class="nav-item" role="presentation"><nuxt-link class="nav-link" to="/">One-to-One</nuxt-link></li>
+                        <li class="nav-item" role="presentation"><nuxt-link class="nav-link" to="/manytoone">Many-to-One</nuxt-link></li>
                     </ul>
                 </div>
             </div>

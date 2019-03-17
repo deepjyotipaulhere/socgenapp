@@ -49,6 +49,27 @@ def insertcpfiles():
         print(c.tb_lineno)
         return make_response(str(e),500)
 
+@app.route("/insertsgfilesmo",methods=['POST'])
+def insertsgfilesmo():
+    try:
+        con=connection()
+        cur=con.cursor()
+        file = request.files['file']
+        data=file.read()
+        p=data.splitlines()[1:]
+        print(p[0][4:].decode())
+        query="insert into manytoone_sg values('"+p[0][4:].decode()+"','"+p[1][5:].decode()+"','"+p[2][5:].decode()+"','"+p[3][5:].decode()+"','"+p[4][5:].decode()+"','"+p[5][5:].decode()+"','"+p[6][5:].decode()+"','"+p[7][5:].decode()+"','"+p[8][5:].decode()+"','"+p[9][4:].decode()+"','"+p[10][5:].decode()+"','"+p[11][5:].decode()+"','"+p[12][5:].decode()+"','"+p[13][5:].decode()+"','"+p[14][4:].decode()+"','"+p[15][5:].decode()+"','"+p[16][5:].decode()+"','"+p[17][5:].decode()+"')"
+        cur.execute(query)
+        con.commit()
+        return "ok"
+    except Exception as e:
+        print(str(e))
+        a,b,c=sys.exc_info()
+        print(c.tb_lineno)
+        return make_response(str(e),500)
+
+
+
 @app.route("/match",methods=['GET'])
 def match():
     try:
@@ -62,7 +83,9 @@ def match():
         res2=cur.fetchall()
         a=[]
         demoa=[]
+
         partial=[]
+        partial2=[]
         unmatched=[]
         k=[]
         for i in res1:
@@ -77,6 +100,7 @@ def match():
                         break
                     else:
                         partial.append(i)
+                        partial2.append(j)
                 else:
                     if c==len(res1):
                         unmatched.append(i)
@@ -85,11 +109,24 @@ def match():
         x=[row[0] for row in a]
         
         closefit=[i for i in partial if i not in unmatched]
+        cx=closefit
         closefit=list(set([row[':20'] for row in closefit]))
+        cxtocp=[]
+        for i in cx:
+            for j in a:
+                if i[':20']==j[0]:
+                    cxtocp.append({'sg':i,'cp':j[1]})
+        k=[]
+        for i in cxtocp:
+            for j in res2:
+                if i['cp']==j[':20']:
+                    k.append({'sg':i['sg'],'cp':j})
         return jsonify({
             'match':a,
             'closefit':closefit,
-            'unmatch':unmatched
+            'unmatch':unmatched,
+            'partial1':k,
+            # 'partial2':partial2
         })
 
         # return jsonify(a)

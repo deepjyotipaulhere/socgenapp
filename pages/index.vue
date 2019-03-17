@@ -27,16 +27,10 @@
         <div>
             <div class="container">
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-md-4">
                         <div class="card border-white shadow">
                             <div class="card-body">
-                                <h4 class="card-title">SG Files</h4>
-                                <GChart
-                                    type="PieChart"
-                                    :data="chartData"
-                                    :createChart="(el, google) => new google.charts.Pie(el)"
-                                    @ready="onChartReady"
-                                />
+                                <div id="chart1" style="width:100%;height:250px"></div>
                             </div>
                         </div>
                     </div>
@@ -49,7 +43,7 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="card shadow" v-if="matches.length>0">
-                            <div class="card-body">
+                            <div class="card-body" style="max-height:400px;overflow-y:auto">
                                 <h4 class="card-title">Match Results</h4>
                                 <div class="table-responsive">
                                     <table class="table">
@@ -72,7 +66,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="card shadow" v-if="matches.length>0">
-                            <div class="card-body">
+                            <div class="card-body" style="max-height:400px;overflow-y:auto">
                                 <h4 class="card-title">Mismatch Results</h4>
                                 <div class="table-responsive">
                                     <table class="table">
@@ -95,7 +89,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="card shadow" v-if="matches.length>0">
-                            <div class="card-body">
+                            <div class="card-body" style="max-height:400px;overflow-y:auto">
                                 <h4 class="card-title">Close Fits</h4>
                                 <div class="table-responsive">
                                     <table class="table">
@@ -119,7 +113,48 @@
                 </div>
             </div>
         </div>
-        <br><br>
+        <br>
+        <div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card shadow" v-if="matches.length>0">
+                            <div class="card-body">
+                                <h4 class="card-title">Close Fits <span style="color:gray;float:right">(SG Value - CP Value)</span></h4>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Reference</th>
+                                                <th>Intermediary</th>
+                                                <th>Intermediary</th>
+                                                <th>Exchange Rate</th>
+                                                <th>Buy Amount</th>
+                                                <th>Sell Amount</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(x,i) in closefitsdata" :key="i">
+                                                <td>{{x['sg'][":20"]}} - {{x['cp'][":20"]}}</td>
+                                                <td>{{x['sg'][":57A"]}} - {{x['cp'][":57A"]}}</td>
+                                                <td>{{x['sg'][":58A"]}} - {{x['cp'][":58A"]}}</td>
+                                                <td>{{x['sg'][":36"]}} - {{x['cp'][":36"]}}</td>
+                                                <td>{{x['sg'][":32B"]}} - {{x['cp'][":32B"]}}</td>
+                                                <td>{{x['sg'][":33B"]}} - {{x['cp'][":33B"]}}</td>
+                                                <td><button class="btn btn-success">Accept</button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        <br><br><br><br>
         <div>
             <nav class="navbar navbar-light navbar-expand-md fixed-bottom text-center navigation-clean shadow">
                 <div class="container"><button class="navbar-toggler" data-toggle="collapse" data-target="#navcol-1"><span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
@@ -133,7 +168,7 @@
 </template>
 
 <script>
-import {GChart} from 'vue-google-charts';
+import {GoogleCharts} from 'google-charts';
 export default {
     data(){
         return {
@@ -147,19 +182,18 @@ export default {
             unmatches:[],
             closefits:[],
             chartData:[],
+            closefitsdata:[]
         }
     },
-
-    components:{
-        GChart
+    mounted(){
+        GoogleCharts.load(this.drawChart);
     },
-
     methods:{
         handleFilesUpload1(fileList){
             if (!fileList.length) return;
             Array.from(Array(fileList.length).keys())
                 .map(x => {
-                    this.files[x]=fileList[x];                                       
+                    this.files[x]=fileList[x];
                 }
             );
         },
@@ -196,34 +230,25 @@ export default {
             this.cpfilesuploading=false
         },
         match(){
-            // this.$axios.get("/getsgfiles").then(response=>{
-            //     this.getsgfiles=response.data
-            // })
-            // this.$axios.get("/getcpfiles").then(response=>{
-            //     this.getcpfiles=response.data
-            // })
             this.$axios.get("/match").then(response=>{
                 this.matches=response.data.match
                 this.unmatches=response.data.unmatch
                 this.closefits=response.data.closefit
-                this.chartData=[
-                    ['Status','Count'],
-                    ['Match',this.matches.length],
-                    ['Mismatch',this.unmatches.length],
-                    ['Close Fits',this.closefits.length],
-                ]
+                this.closefitsdata=response.data.partial1
             }).then(()=>{
                 this.drawChart()
             })
         },
         drawChart(){
-            // this.$axios.get("http://localhost:5000").then(response=>{
-            //     this.chartData=response.data
-            // })
+            const data = GoogleCharts.api.visualization.arrayToDataTable([
+                ['Status','Count'],
+                ['Match',this.matches.length],
+                ['Mismatch',this.unmatches.length],
+                ['Close Fits',this.closefits.length],
+            ]);
+            const pie_1_chart = new GoogleCharts.api.visualization.PieChart(document.getElementById('chart1'));
+            pie_1_chart.draw(data);
         },
-        onChartReady (chart, google) {
-            this.chartsLib = google
-        }
     }
 }
 </script>
