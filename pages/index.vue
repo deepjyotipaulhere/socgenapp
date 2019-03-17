@@ -34,6 +34,35 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-md-8">
+                        <div class="card border-white shadow">
+                            <div class="card-body">
+                                <div class="row" style="height:250px">
+                                    <div class="col-md-4">
+                                        <br>
+                                        <br>
+                                        <br>
+                                        <h1 style="text-align:center">{{matches.length}}</h1>
+                                        <h4 style="text-align:center">Matches</h4>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <br>
+                                        <br>
+                                        <br>
+                                        <h1 style="text-align:center">{{unmatches.length}}</h1>
+                                        <h4 style="text-align:center">Unmatches</h4>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <br>
+                                        <br>
+                                        <br>
+                                        <h1 style="text-align:center">{{closefits.length}}</h1>
+                                        <h4 style="text-align:center">Closefits</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
